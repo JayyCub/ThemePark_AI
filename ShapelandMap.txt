@@ -12,11 +12,11 @@ __O________5OOOO____
 __OOOO_____OO_OO____
 __O_OOO___OO__OO____
 __O__OO_OOO____OO___
-__O__OOOOOOO___OO___
+__O__OOOOOOO___OO6__
 __O_OOOOOOOOOOOOO___
-__OOOO__OOO_OO_OO6__
-__OO_O___O___O_OO___
+__OOOO__OOO_OO_OO___
+__OO_O___O___O_7O___
 _1O_OO__OOO__OOOO___
 __OOO___O_O___OO____
-____0___OOO___7_____
+____0___OOO___8_____
 _________E__________

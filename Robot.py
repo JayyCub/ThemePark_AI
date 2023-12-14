@@ -15,17 +15,22 @@ class Robot:
         self.gui = gui
         self.park = park
         self.rode = 0
+        self.ridden = 0
         self.curr_x = self.park.start_x
         self.curr_y = self.park.start_y
-        print(f"Starting at: {self.curr_x}, {self.curr_y}")
+        # print(f"Starting at: {self.curr_x}, {self.curr_y}")
         self.gui.change_cell_color(self.curr_y, self.curr_x, "blue")
         # for i in range(0, 5):
         #     time.sleep(2)
         #     self.move(1)
         #     # self.gui.update_gui()
         self.Vs = []
+        self.previous_ride = -1
 
-        self.Run()
+        while self.park.curr_time < self.park.end_of_day:
+            input("Press enter to find the next ride:")
+            self.Run()
+        print(f"\nThanks for visiting {self.park.name}!")
 
     def move(self, direction):
         # print(f"At [{self.curr_x}, {self.curr_y}]... {Directions(direction).name}")
@@ -71,7 +76,7 @@ class Robot:
                     if change > maxChange:
                         maxChange = change
             if maxChange < epsilon:
-                print("CONVERGED")
+                # print("CONVERGED")
                 break
 
     def calculateReward(self, x, y):
@@ -79,7 +84,12 @@ class Robot:
         if self.park.map[y][x] == 'O' or self.park.map[y][x] == 'E':
             return 0.0
         elif self.park.map[y][x].isdigit():
-            return self.park.ride_list[int(self.park.map[y][x])].reward
+            ride_num = int(self.park.map[y][x])
+            if ride_num == self.previous_ride:
+                return -1
+            ride_reward = self.park.ride_list[ride_num].reward
+            ride_wait = self.park.ride_list[ride_num].wait_time
+            return ride_reward / ride_wait
             # return 10.0
 
     def getMaxNextStateValue(self, x, y):
@@ -140,16 +150,16 @@ class Robot:
         return expectedUtility
 
     def Run(self):
-        print("Starting...")
+        # print("Starting...")
         self.value_iteration()
-        print("Done with iteration.")
+        # print("Done with iteration.")
 
         # for row in self.Vs:
         #     print(row)
 
         while True:
             if self.park.curr_time >= self.park.end_of_day:
-                print("The park is now closed, please exit.")
+                print(f"[{self.park.curr_time}]: The park is now closed, please exit.")
                 break
 
             action = self.automaticAction()
@@ -166,15 +176,21 @@ class Robot:
                 print("←", end=" ", flush=True)
                 self.park.curr_time += 1
             elif action == Directions.Stay:
-                print("x", end=" ", flush=True)
+                print("Stay", end=" ", flush=True)
 
             time.sleep(0.1)
             self.move(action)
             self.gui.update_gui()
 
             if self.park.map[self.curr_y][self.curr_x].isdigit():
-                print("Now boarding The ",
-                      self.park.ride_list[int(self.park.map[self.curr_y][self.curr_x])].name,
+                ride_num = int(self.park.map[self.curr_y][self.curr_x])
+                print(f"\n[{self.park.curr_time}]: Now boarding The ",
+                      self.park.ride_list[ride_num].name,
                       "!")
-                print("The time is ", self.park.curr_time)
+                self.park.curr_time += self.park.ride_list[ride_num].wait_time
+                self.previous_ride = ride_num
+                print(f"[{self.park.curr_time}]: ")
+                self.park.ride_list[ride_num].reward /= 5
+                self.park.increment_waits()
+
                 break

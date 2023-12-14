@@ -7,8 +7,9 @@ class Park:
         self.park_id = park_id
         self.ride_list = []
         self.map = []
-        self.curr_time = 900
+        self.curr_time = 0
         self.end_of_day = self.curr_time + lod
+        print(f"The park closes at: [{self.end_of_day}] today!")
         self.start_x = -1
         self.start_y = -1
         self.width = 0
@@ -18,7 +19,7 @@ class Park:
         self.map = map_array
         self.height = len(self.map)
         self.width = len(self.map[1])
-        print(f"WIDTH: {self.width}, HEIGHT: {self.height}")
+        # print(f"WIDTH: {self.width}, HEIGHT: {self.height}")
         for row in range(self.height):
             for col in range(self.width):
                 if self.map[row][col] == 'E':
@@ -42,7 +43,7 @@ class Park:
             print(f"{ride.wait_time} : {ride.name}")
 
     def increment_waits(self):
-        self.curr_time += 5
+        # self.curr_time += 5
         for ride in self.ride_list:
             ride.increment_wait()
 
@@ -57,7 +58,7 @@ class Ride:
 
     def randomize_wait(self):
         if self.weight == 0:
-            random_number = random.randint(5, 30)
+            random_number = random.randint(0, 30)
             random_five = random_number + (5 - random_number % 5)
             self.wait_time = random_five
         if self.weight == 1:
@@ -72,4 +73,4 @@ class Ride:
     def increment_wait(self):
         adjustment = random.choice([-10, -5, 0, 5, 10]) * (self.weight + 1)
         adjusted_wait_time = self.wait_time + adjustment
-        self.wait_time = min(max(0, adjusted_wait_time), 120)
+        self.wait_time = min(max(5, adjusted_wait_time), 120)

@@ -92,7 +92,7 @@ def mainFunc(gui, park):
 options = getOptions()
 
 park_file = open(options.park_file, 'r')
-my_park = Park(name=sys.argv[1].strip(".txt"), park_id=0, lod=15)
+my_park = Park(name=sys.argv[1].strip(".txt"), park_id=0, lod=8*60)
 lines = park_file.readlines()
 
 # Initialize the 2D array with empty values
