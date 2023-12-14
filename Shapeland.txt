@@ -1,0 +1,5 @@
+Circle:0:20
+Octagon:0:20
+Triangle:1:50
+Pentagon:2:80
+Square:2:100
