@@ -24,12 +24,14 @@ class Robot:
         #     time.sleep(2)
         #     self.move(1)
         #     # self.gui.update_gui()
-        self.Vs = []
+        self.v_s = []
         self.previous_ride = -1
 
         while self.park.curr_time < self.park.end_of_day:
             input("Press enter to find the next ride:")
-            self.Run()
+            self.run()
+
+        print(f"[{self.park.curr_time}]: The park is now closed, please exit.")
         print(f"\nThanks for visiting {self.park.name}!")
 
     def move(self, direction):
@@ -50,36 +52,36 @@ class Robot:
         self.gui.reset_cell(old_y, old_x)
 
     def value_iteration(self):
-        discount_factor = 0.85
+        discount_factor = 0.80
         epsilon = 0.01
 
-        self.Vs = [[0 for _ in range(self.park.width)] for _ in range(self.park.height)]
+        self.v_s = [[0 for _ in range(self.park.width)] for _ in range(self.park.height)]
 
         while True:
-            maxChange = 0.0
+            max_change = 0.0
             for x in range(self.park.width):
                 for y in range(self.park.height):
                     # print(f"X: {x}, Y: {y}, val: {self.park.map[y][x]}")
                     if self.park.map[y][x] == '_':
                         continue
 
-                    oldV = self.Vs[y][x]
-                    reward = self.calculateReward(x, y)
-                    max = self.getMaxNextStateValue(x, y)
+                    old_v = self.v_s[y][x]
+                    reward = self.calculate_reward(x, y)
+                    max_val = self.get_max_next_state_value(x, y)
                     # print(f"Reward: {type(reward)}, {reward}\n"
                     #       f"discount: {type(discount_factor)}, {discount_factor}\n"
                     #       f"max: {type(max)}, {max}\n")
-                    newValue = reward + discount_factor * max
-                    self.Vs[y][x] = newValue
+                    new_val = reward + discount_factor * max_val
+                    self.v_s[y][x] = new_val
 
-                    change = abs(newValue - oldV)
-                    if change > maxChange:
-                        maxChange = change
-            if maxChange < epsilon:
+                    change = abs(new_val - old_v)
+                    if change > max_change:
+                        max_change = change
+            if max_change < epsilon:
                 # print("CONVERGED")
                 break
 
-    def calculateReward(self, x, y):
+    def calculate_reward(self, x, y):
         # print(f"X: {x}, Y: {y}, val: {self.park.map[y][x]}")
         if self.park.map[y][x] == 'O' or self.park.map[y][x] == 'E':
             return 0.0
@@ -89,23 +91,25 @@ class Robot:
                 return -1
             ride_reward = self.park.ride_list[ride_num].reward
             ride_wait = self.park.ride_list[ride_num].wait_time
-            return ride_reward / ride_wait
+            times_rode = self.park.ride_list[ride_num].times_rode
+
+            return (ride_reward * pow(2, -1 * times_rode)) - ride_wait
             # return 10.0
 
-    def getMaxNextStateValue(self, x, y):
-        maxNextValue = float('-inf')
+    def get_max_next_state_value(self, x, y):
+        max_next_value = float('-inf')
 
         for direction in Directions:
-            newX, newY = self.getNewPosition(x, y, direction)
+            new_x, new_y = self.get_new_position(x, y, direction)
 
-            if self.squareValid(newX, newY) and self.park.map[newY][newX] != '_':
-                nextValue = self.Vs[newY][newX]
-                if nextValue > maxNextValue:
-                    maxNextValue = nextValue
+            if self.square_valid(new_x, new_y) and self.park.map[new_y][new_x] != '_':
+                next_value = self.v_s[new_y][new_x]
+                if next_value > max_next_value:
+                    max_next_value = next_value
         # print(round(maxNextValue, 3), end=" : ", flush=True)
-        return maxNextValue
+        return max_next_value
 
-    def getNewPosition(self, x, y, direction):
+    def get_new_position(self, x, y, direction):
         match direction.value:
             case 1:
                 y -= 1
@@ -117,39 +121,39 @@ class Robot:
                 x -= 1
         return x, y
 
-    def squareValid(self, x, y):
+    def square_valid(self, x, y):
         valid = True
         if y < 0 or y >= self.park.height or x < 0 or x >= self.park.width:
             valid = False
         return valid
 
-    def automaticAction(self):
-        maxExpectedUtil = float('-inf')
-        bestAction = Directions.Stay
+    def automatic_action(self):
+        max_expected_util = float('-inf')
+        best_action = Directions.Stay
         for direction in Directions:
-            expectedUtil = self.calcExpectedUtil(direction)
+            expected_util = self.calc_expected_util(direction)
 
-            if expectedUtil > maxExpectedUtil:
-                maxExpectedUtil = expectedUtil
-                bestAction = direction
+            if expected_util > max_expected_util:
+                max_expected_util = expected_util
+                best_action = direction
 
-        return bestAction
+        return best_action
 
-    def calcExpectedUtil(self, direction):
-        expectedUtility = 0.0
+    def calc_expected_util(self, direction):
+        expected_utility = 0.0
 
         for x in range(self.park.width):
             for y in range(self.park.height):
                 if self.park.map[y][x] == '_':
                     continue
 
-                newX, newY = self.getNewPosition(x, y, direction)
-                if self.squareValid(newX, newY) and x == self.curr_x and y == self.curr_y:
-                    expectedUtility += self.Vs[newY][newX]
+                new_x, new_y = self.get_new_position(x, y, direction)
+                if self.square_valid(new_x, new_y) and x == self.curr_x and y == self.curr_y:
+                    expected_utility += self.v_s[new_y][new_x]
 
-        return expectedUtility
+        return expected_utility
 
-    def Run(self):
+    def run(self):
         # print("Starting...")
         self.value_iteration()
         # print("Done with iteration.")
@@ -162,7 +166,7 @@ class Robot:
                 print(f"[{self.park.curr_time}]: The park is now closed, please exit.")
                 break
 
-            action = self.automaticAction()
+            action = self.automatic_action()
             if action == Directions.Up:
                 print("↑", end=" ", flush=True)
                 self.park.curr_time += 1
@@ -190,7 +194,8 @@ class Robot:
                 self.park.curr_time += self.park.ride_list[ride_num].wait_time
                 self.previous_ride = ride_num
                 print(f"[{self.park.curr_time}]: ")
-                self.park.ride_list[ride_num].reward /= 5
+                # self.park.ride_list[ride_num].reward /= 10
+                self.park.ride_list[ride_num].times_rode += 1
                 self.park.increment_waits()
 
                 break

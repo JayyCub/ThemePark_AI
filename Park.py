@@ -55,6 +55,7 @@ class Ride:
         self.wait_time = 0
         self.reward = int(reward)
         self.randomize_wait()
+        self.times_rode = 0
 
     def randomize_wait(self):
         if self.weight == 0:

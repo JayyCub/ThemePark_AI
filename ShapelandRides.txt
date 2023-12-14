@@ -1,9 +1,9 @@
-Triangle:1:40
-Circle:2:250
-Pentagon:1:200
-Heptagon:1:25
-Square:1:200
-Oval:0:10
-Octagon:0:10
+Triangle:1:35
+Circle:2:120
+Pentagon:1:70
+Heptagon:1:20
+Square:1:55
+Oval:0:15
+Octagon:0:20
 Trapezoid:0:5
-Hexagon:1:150
+Hexagon:1:60
