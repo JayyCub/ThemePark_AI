@@ -1,9 +1,10 @@
 Triangle:1:35
-Circle:2:120
-Pentagon:1:70
+Circle:2:135
+Pentagon:1:80
 Heptagon:1:20
-Square:1:55
-Oval:0:15
-Octagon:0:20
+Square:1:70
+Oval:0:10
+Octagon:0:10
 Trapezoid:0:5
 Hexagon:1:60
+Parallelogram:1:30

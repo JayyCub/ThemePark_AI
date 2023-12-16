@@ -11,7 +11,7 @@ class Directions(Enum):
 
 
 class Robot:
-    def __init__(self, gui, park):
+    def __init__(self, gui, park, val_gui):
         self.gui = gui
         self.park = park
         self.rode = 0
@@ -26,13 +26,10 @@ class Robot:
         #     # self.gui.update_gui()
         self.v_s = []
         self.previous_ride = -1
+        self.vals_gui = val_gui
+        self.rides = []
 
-        while self.park.curr_time < self.park.end_of_day:
-            input("Press enter to find the next ride:")
-            self.run()
-
-        print(f"[{self.park.curr_time}]: The park is now closed, please exit.")
-        print(f"\nThanks for visiting {self.park.name}!")
+        self.run()
 
     def move(self, direction):
         # print(f"At [{self.curr_x}, {self.curr_y}]... {Directions(direction).name}")
@@ -52,7 +49,7 @@ class Robot:
         self.gui.reset_cell(old_y, old_x)
 
     def value_iteration(self):
-        discount_factor = 0.80
+        discount_factor = 0.95
         epsilon = 0.01
 
         self.v_s = [[0 for _ in range(self.park.width)] for _ in range(self.park.height)]
@@ -93,7 +90,7 @@ class Robot:
             ride_wait = self.park.ride_list[ride_num].wait_time
             times_rode = self.park.ride_list[ride_num].times_rode
 
-            return (ride_reward * pow(2, -1 * times_rode)) - ride_wait
+            return (ride_reward / ride_wait) * pow(3, -1 * times_rode)
             # return 10.0
 
     def get_max_next_state_value(self, x, y):
@@ -148,54 +145,64 @@ class Robot:
                     continue
 
                 new_x, new_y = self.get_new_position(x, y, direction)
-                if self.square_valid(new_x, new_y) and x == self.curr_x and y == self.curr_y:
+                if self.square_valid(new_x, new_y) and x == self.curr_x and y == self.curr_y\
+                        and self.park.map[new_y][new_x] != '_':
                     expected_utility += self.v_s[new_y][new_x]
 
         return expected_utility
 
     def run(self):
-        # print("Starting...")
-        self.value_iteration()
-        # print("Done with iteration.")
+        while self.park.curr_time < self.park.end_of_day:
+            input("Press enter to find the next ride:")
+            self.value_iteration()
+            self.vals_gui.val_gui_update(self.v_s)
+            input("Press enter to go to the ride:")
+            # for row in self.Vs:
+            #     print(row)
 
-        # for row in self.Vs:
-        #     print(row)
+            while True:
+                if self.park.curr_time >= self.park.end_of_day:
+                    break
 
-        while True:
-            if self.park.curr_time >= self.park.end_of_day:
-                print(f"[{self.park.curr_time}]: The park is now closed, please exit.")
-                break
+                action = self.automatic_action()
+                if action == Directions.Up:
+                    print("↑", end=" ", flush=True)
+                    self.park.curr_time += 1
+                elif action == Directions.Down:
+                    print("↓", end=" ", flush=True)
+                    self.park.curr_time += 1
+                elif action == Directions.Right:
+                    print("→", end=" ", flush=True)
+                    self.park.curr_time += 1
+                elif action == Directions.Left:
+                    print("←", end=" ", flush=True)
+                    self.park.curr_time += 1
+                elif action == Directions.Stay:
+                    print("Stay", end=" ", flush=True)
 
-            action = self.automatic_action()
-            if action == Directions.Up:
-                print("↑", end=" ", flush=True)
-                self.park.curr_time += 1
-            elif action == Directions.Down:
-                print("↓", end=" ", flush=True)
-                self.park.curr_time += 1
-            elif action == Directions.Right:
-                print("→", end=" ", flush=True)
-                self.park.curr_time += 1
-            elif action == Directions.Left:
-                print("←", end=" ", flush=True)
-                self.park.curr_time += 1
-            elif action == Directions.Stay:
-                print("Stay", end=" ", flush=True)
+                time.sleep(0.1)
+                self.move(action)
+                self.gui.update_gui()
 
-            time.sleep(0.1)
-            self.move(action)
-            self.gui.update_gui()
+                if self.park.map[self.curr_y][self.curr_x].isdigit():
+                    ride_num = int(self.park.map[self.curr_y][self.curr_x])
+                    print(f"\n[{self.park.curr_time}]: Now boarding The ",
+                          self.park.ride_list[ride_num].name,
+                          "!")
+                    self.rides.append(self.park.ride_list[ride_num])
+                    self.park.curr_time += self.park.ride_list[ride_num].wait_time
+                    self.previous_ride = ride_num
+                    print(f"[{self.park.curr_time}]: ")
+                    # self.park.ride_list[ride_num].reward /= 10
+                    self.park.ride_list[ride_num].times_rode += 1
+                    self.park.increment_waits()
 
-            if self.park.map[self.curr_y][self.curr_x].isdigit():
-                ride_num = int(self.park.map[self.curr_y][self.curr_x])
-                print(f"\n[{self.park.curr_time}]: Now boarding The ",
-                      self.park.ride_list[ride_num].name,
-                      "!")
-                self.park.curr_time += self.park.ride_list[ride_num].wait_time
-                self.previous_ride = ride_num
-                print(f"[{self.park.curr_time}]: ")
-                # self.park.ride_list[ride_num].reward /= 10
-                self.park.ride_list[ride_num].times_rode += 1
-                self.park.increment_waits()
+                    break
 
-                break
+        print(f"\n[{self.park.curr_time}]: The park is now closed, please exit.")
+        print(f"Thanks for visiting {self.park.name}!")
+        print("Your day report:")
+        for ride in self.rides:
+            print(ride.name)
+        input("\nPress enter to end program:")
+        exit(0)

@@ -1,8 +1,12 @@
 # This is a sample Python script.
 import argparse
+import math
 import sys
 import time
 import tkinter as tk
+
+import numpy
+import numpy as np
 
 from Park import Park
 from Robot import Robot
@@ -54,6 +58,19 @@ class MapGUI:
         self.labels[i][j].config(text=text, bg=color)
         self.update_gui()
 
+    def val_gui_update(self, vals):
+        np_array = numpy.array(vals)
+        max_val = np.max(np_array)
+        for i, row in enumerate(vals):
+            for j, cell in enumerate(row):
+                cell_value = round(int(vals[i][j]), 0)
+                if cell_value != 0:
+                    percent = cell_value / max_val
+                    col = int(255 * percent)
+                    color = '#%02x%02x%02x' % (255 - col, 255 - col, 255)
+                    self.labels[i][j].config(text=cell_value, bg=color)
+        self.update_gui()
+
     def update_gui(self):
         self.root.update()
 
@@ -69,7 +86,7 @@ def getOptions(args=sys.argv[1:]):
     return options_return
 
 
-def mainFunc(gui, park):
+def mainFunc(gui, park, val_gui):
     # print("--\t--\tDAY START\t--\t--")
     # print("WELCOME TO " + my_park.name.upper() + '!')
     # my_park.display_info()
@@ -86,7 +103,7 @@ def mainFunc(gui, park):
     # gui.reset_cell(5, 5)
     # gui.change_cell_color(5, 4, "blue")
     # park.display_times()
-    robo = Robot(gui, park)
+    robo = Robot(gui, park, val_gui)
 
 
 options = getOptions()
@@ -116,7 +133,12 @@ for ride in rides:
     my_park.add_ride(ride.strip())
 
 
-root = tk.Tk()
-map_gui = MapGUI(root, park_array)
-root.after(500, mainFunc, map_gui, my_park)
-root.mainloop()
+root1 = tk.Tk()
+root2 = tk.Tk()
+root1.geometry('440x440')
+root2.geometry('440x440+500+0')
+map_gui = MapGUI(root1, park_array)
+v_s_gui = MapGUI(root2, park_array)
+root1.after(500, mainFunc, map_gui, my_park, v_s_gui)
+root1.mainloop()
+root2.mainloop()
