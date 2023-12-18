@@ -8,6 +8,7 @@ class Park:
         self.ride_list = []
         self.map = []
         self.curr_time = 0
+        self.lod = lod
         self.end_of_day = self.curr_time + lod
         print(f"The park closes at: [{self.end_of_day}] today!")
         self.start_x = -1
@@ -28,6 +29,22 @@ class Park:
 
     def add_ride(self, ride_val):
         name, weight, reward = ride_val.split(':')
+        get_inputs = True
+        valid = False
+        input_val = ''
+        if get_inputs:
+            while not valid:
+                try:
+                    input_val = input(f"How many minutes would you wait for the {name}?\n"
+                                      f"(Or press enter to use default value)\n")
+                    if input_val == '' or input_val == '\n':
+                        break
+                    input_val = int(input_val)
+                    reward = input_val
+                    valid = True
+                except ValueError:
+                    print("Not a valid number, please try again")
+
         self.ride_list.append(Ride(name, weight, reward))
 
     def display_info(self):

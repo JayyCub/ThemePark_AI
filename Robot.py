@@ -50,6 +50,23 @@ class Robot:
 
     def value_iteration(self):
         discount_factor = 0.95
+
+        # WARNING: Enabling this feature has occasional strange side effects on GUI Map
+        get_inputs = False
+        valid = False
+        input_val = ''
+        if get_inputs:
+            while not valid:
+                try:
+                    input_val = float(input(f"(Please enter on a scale 0.0 (less) to 1.0 (more), "
+                                            f"and p.s., this can have weird side effects on the gui)\n"
+                                          f"How comfortable are you with a longer walk?: "))
+                    if 0.01 <= input_val <= 1.0:
+                        valid = True
+                except ValueError:
+                    print("Not a Valid number, please try again")
+            discount_factor = input_val
+
         epsilon = 0.01
 
         self.v_s = [[0 for _ in range(self.park.width)] for _ in range(self.park.height)]
